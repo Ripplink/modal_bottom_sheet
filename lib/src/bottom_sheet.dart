@@ -39,6 +39,7 @@ class ModalBottomSheet extends StatefulWidget {
   /// Creates a bottom sheet.
   const ModalBottomSheet({
     Key key,
+    this.closeProgressThreshold,
     this.animationController,
     this.animationCurve,
     this.enableDrag = true,
@@ -53,6 +54,10 @@ class ModalBottomSheet extends StatefulWidget {
         assert(onClosing != null),
         assert(child != null),
         super(key: key);
+
+  /// The closeProgressThreshold parameter
+  /// specifies when the bottom sheet will be dismissed when user drags it.
+  final double closeProgressThreshold;
 
   /// The animation controller that controls the bottom sheet's entrance and
   /// exit animations.
@@ -149,7 +154,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
       widget.animationController.value < _willPopThreshold;
 
   bool get hasReachedCloseThreshold =>
-      widget.animationController.value < _closeProgressThreshold;
+      widget.animationController.value <
+      (widget.closeProgressThreshold ?? _closeProgressThreshold);
 
   void _close() {
     isDragging = false;
@@ -256,6 +262,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
   void _handleScrollUpdate(ScrollNotification notification) {
     //Check if scrollController is used
     if (!_scrollController.hasClients) return;
+    //Check if there is more than 1 attached ScrollController e.g. swiping page in PageView
+    if (_scrollController.positions.length > 1) return;
 
     if (_scrollController !=
         Scrollable.of(notification.context).widget.controller) return;
@@ -297,7 +305,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
       if (dragDetails != null) {
         final duration = _startTime.difference(DateTime.now());
         _velocityTracker.addPosition(duration, Offset(0, offset));
-        _handleDragUpdate(dragDetails.primaryDelta);
+        _handleDragUpdate(dragDetails.delta.dy);
       } else if (isDragging) {
         final velocity = _velocityTracker.getVelocity().pixelsPerSecond.dy;
         _velocityTracker = null;
@@ -356,7 +364,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
                     delegate: _CustomBottomSheetLayout(bounceAnimation.value),
                     child: GestureDetector(
                       onVerticalDragUpdate: (details) {
-                        _handleDragUpdate(details.primaryDelta);
+                        _handleDragUpdate(details.delta.dy);
                       },
                       onVerticalDragEnd: (details) {
                         _handleDragEnd(details.primaryVelocity);
