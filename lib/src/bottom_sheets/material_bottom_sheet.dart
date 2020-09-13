@@ -5,7 +5,7 @@ import 'dart:async';
 /// Shows a modal material design bottom sheet.
 Future<T> showMaterialModalBottomSheet<T>({
   @required BuildContext context,
-  @required ScrollWidgetBuilder builder,
+  @required WidgetBuilder builder,
   double closeProgressThreshold,
   Color backgroundColor,
   double elevation,
